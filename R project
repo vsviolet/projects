@@ -1,0 +1,97 @@
+#install packages
+install.packages("tidyverse")
+install.packages("rmarkdown")
+install.packages("lubridate")
+install.packages("dplyr")
+install.packages("ggplot2")
+install.packages("tidyr")
+install.packages("here")
+install.packages("skimr")
+install.packages("janitor")
+
+#load packages
+library("tidyverse")
+library("lubridate")
+library("dplyr")
+library("ggplot2")
+library("tidyr")
+library("here")
+library("skimr")
+library("janitor")
+
+daily_activity <- read.csv(file.choose())
+hourly_calories <- read.csv(file.choose())
+hourly_intensities <- read.csv(file.choose())
+sleep <- read.csv(file.choose())
+heartrate <- read.csv(file.choose())
+weight <- read.csv(file.choose())
+
+head(daily_activity)
+colnames(daily_activity)
+str(daily_activity)
+
+head(sleep)
+colnames(sleep)
+str(sleep)
+
+head(hourly_calories)
+colnames(hourly_calories)
+str(hourly_calories)
+
+head(hourly_intensities)
+colnames(hourly_intensities)
+str(hourly_intensities)
+
+head(heartrate)
+colnames(heartrate)
+str(heartrate)
+
+head(weight)
+colnames(weight)
+str(weight)
+
+n_distinct(daily_activity$Id)
+n_distinct(sleep$Id)
+n_distinct(hourly_calories$Id)
+n_distinct(hourly_intensities$Id)
+n_distinct(heartrate$Id)
+n_distinct(weight$Id)
+
+summary(daily_activity)
+summary(sleep)
+
+
+# activity
+daily_activity$ActivityDate=as.POSIXct(daily_activity$ActivityDate, format="%m/%d/%Y", tz=Sys.timezone())
+daily_activity$date <- format(daily_activity$ActivityDate, format = "%m/%d/%y")
+# sleep
+sleep$SleepDay=as.POSIXct(sleep$SleepDay, format="%m/%d/%Y %I:%M:%S %p", tz=Sys.timezone())
+sleep$date <- format(sleep$SleepDay, format = "%m/%d/%y")
+
+
+merged_data <- merge(sleep, daily_activity, by=c('Id', 'date'))
+head(merged_data)
+
+merged_data %>%  
+  select(TotalSteps,TotalDistance,SedentaryMinutes, Calories, 
+         TotalSleepRecords, TotalMinutesAsleep, TotalTimeInBed) %>%
+  summary()
+
+daily_activity %>% 
+  select(TotalSteps,TotalDistance,SedentaryMinutes, Calories) %>% 
+  summary()
+
+sleep %>% 
+  select(TotalSleepRecords, TotalMinutesAsleep, TotalTimeInBed) %>% 
+  summary()
+
+summary(merged_data)
+
+
+ggplot(data=daily_activity, aes(x=TotalSteps, y=SedentaryMinutes)) + geom_point() + geom_smooth() + labs(title="Total Steps vs. Sedentary Minutes")
+
+ggplot(data=sleep, aes(x=TotalMinutesAsleep, y=TotalTimeInBed)) + geom_point() + geom_smooth() + labs(title = "Total Minutes Asleep vs. Total Time in Bed")
+
+ggplot(data=merged_data, aes(x=TotalMinutesAsleep, y=SedentaryMinutes)) + 
+  geom_point(color='orange') + geom_smooth() +
+  labs(title="Minutes Asleep vs. Sedentary Minutes")
